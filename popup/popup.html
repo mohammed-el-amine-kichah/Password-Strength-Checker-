@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Security Checker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <img src="../images/icon.png" alt="Password Shield" class="logo">
+      <h1>Password Shield</h1>
+    </div>
+
+    <!-- Password Generator Section -->
+    <div class="section">
+      <h2>Generate a Strong Password</h2>
+      <input type="text" id="generated-password" readonly placeholder="Your secure password will appear here">
+      <div id="password-strength"></div>
+      <button id="generate-btn">Generate Secure Password</button>
+    </div>
+
+    <!-- Password Tips Section -->
+    <div class="section">
+      <h2>Security Best Practices</h2>
+      <ul>
+        <li>Use at least 12 characters</li>
+        <li>Mix uppercase, lowercase, numbers, and symbols</li>
+        <li>Avoid common words or patterns</li>
+        <li>Use unique passwords for each account</li>
+        <li>Consider using a memorable passphrase</li>
+      </ul>
+    </div>
+    
+    <div class="footer">
+      © 2025 Password Shield | Your Security Partner
+    </div>
+  </div>
+
+  <script src="../scripts/zxcvbn.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
