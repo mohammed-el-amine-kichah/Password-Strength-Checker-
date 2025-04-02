@@ -1,4 +1,3 @@
-
 const SCORE_MULTIPLIER = 17.5; // ZXCVBN score (0-4) to 0-70 scale
 const MIN_LENGTH_FULL_POINTS = 8;
 const MIN_LENGTH_PARTIAL_POINTS = 4;
@@ -9,20 +8,26 @@ const MAX_SCORE = 100;
 const SCORE_THRESHOLD_WEAK = 40;
 const SCORE_THRESHOLD_MEDIUM = 70;
 
-// Constants for UI
+
 const BAR_HEIGHT = '7px';
 const BAR_BORDER_RADIUS = '7px';
 const TOOLTIP_WIDTH = '300px';
 const STRENGTH_LABEL_MARGIN_LEFT = '15px';
 
+function checkIfWhitelisted(callback) {
+  const currentDomain = window.location.hostname;
+  
+  chrome.storage.sync.get(['whitelist'], (result) => {
+    const whitelist = result.whitelist || [];
+    callback(whitelist.includes(currentDomain));
+  });
+}
 
 function calculatePasswordStrength(password) {
   const result = zxcvbn(password.slice(0, 100)); // Limit input to 100 characters for performance
 
-  // Map ZXCVBN's score to a 0-70 scale
   let score = result.score * SCORE_MULTIPLIER;
 
-  // Define rules for feedback
   const rules = {
     length: { satisfied: false, message: "At least 8 characters" },
     uppercase: { satisfied: false, message: "At least one uppercase letter" },
@@ -74,7 +79,6 @@ function calculatePasswordStrength(password) {
     }
   }
 
-  // Ensure score stays within 0-100
   score = Math.max(0, Math.min(score, MAX_SCORE));
 
   return { score, rules, feedback: result.feedback };
@@ -280,34 +284,70 @@ function initializeStrengthBar(input) {
   }
 }
 
-// Detect all password fields and attach listeners
-document.querySelectorAll('input[type="password"]').forEach(input => {
-  initializeStrengthBar(input);
-});
+// Main initialization function
+function initializePasswordShield() {
+  checkIfWhitelisted((isWhitelisted) => {
+    if (isWhitelisted) {
+      return;
+    }
+    // Detect all password fields and attach listeners
+    document.querySelectorAll('input[type="password"]').forEach(input => {
+      initializeStrengthBar(input);
+    });
 
-// Observe DOM changes for dynamically loaded password fields
-const observer = new MutationObserver((mutations) => {
-  let hasNewPasswordInputs = false;
-  mutations.forEach(mutation => {
-    if (mutation.addedNodes.length) {
-      const passwordInputs = Array.from(mutation.addedNodes)
-        .filter(node => node.nodeType === Node.ELEMENT_NODE)
-        .flatMap(node => node.matches('input[type="password"]') ? [node] : Array.from(node.querySelectorAll('input[type="password"]')));
-      if (passwordInputs.length > 0) {
-        hasNewPasswordInputs = true;
-        passwordInputs.forEach(input => {
-          if (!input.dataset.hasStrengthBar) {
-            initializeStrengthBar(input);
+    // Observe DOM changes for dynamically loaded password fields
+    const observer = new MutationObserver((mutations) => {
+      let hasNewPasswordInputs = false;
+      mutations.forEach(mutation => {
+        if (mutation.addedNodes.length) {
+          const passwordInputs = Array.from(mutation.addedNodes)
+            .filter(node => node.nodeType === Node.ELEMENT_NODE)
+            .flatMap(node => node.matches('input[type="password"]') ? [node] : Array.from(node.querySelectorAll('input[type="password"]')));
+          if (passwordInputs.length > 0) {
+            hasNewPasswordInputs = true;
+            passwordInputs.forEach(input => {
+              if (!input.dataset.hasStrengthBar) {
+                initializeStrengthBar(input);
+              }
+            });
           }
-        });
+        }
+      });
+
+      // Disconnect observer if no new password inputs are found to reduce overhead
+      if (!hasNewPasswordInputs && document.querySelectorAll('input[type="password"]').length === document.querySelectorAll('input[type="password"][data-has-strength-bar]').length) {
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  });
+}
+
+// Add a listener for whitelist changes so the extension responds if a site is added/removed from whitelist
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && changes.whitelist) {
+    const currentDomain = window.location.hostname;
+    const newWhitelist = changes.whitelist.newValue || [];
+    const isWhitelisted = newWhitelist.includes(currentDomain);
+    
+    if (isWhitelisted) {
+      document.querySelectorAll('.strength-container').forEach(container => {
+        container.remove();
+      });
+      
+      document.querySelectorAll('input[type="password"][data-has-strength-bar]').forEach(input => {
+        delete input.dataset.hasStrengthBar;
+      });
+      
+    } else {
+      // Site was just removed from whitelist, re-initialize
+      if (changes.whitelist.oldValue && changes.whitelist.oldValue.includes(currentDomain)) {
+        initializePasswordShield();
       }
     }
-  });
-
-  // Disconnect observer if no new password inputs are found to reduce overhead
-  if (!hasNewPasswordInputs && document.querySelectorAll('input[type="password"]').length === document.querySelectorAll('input[type="password"][data-has-strength-bar]').length) {
-    observer.disconnect();
   }
 });
 
-observer.observe(document.body, { childList: true, subtree: true });
+
+initializePasswordShield();

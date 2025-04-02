@@ -13,24 +13,63 @@
       <h1>Password Shield</h1>
     </div>
 
-    <!-- Password Generator Section -->
-    <div class="section">
-      <h2>Generate a Strong Password</h2>
-      <input type="text" id="generated-password" readonly placeholder="Your secure password will appear here">
-      <div id="password-strength"></div>
-      <button id="generate-btn">Generate Secure Password</button>
+    <!-- Tab Navigation -->
+    <div class="tab-container">
+      <button class="tab-button active" data-tab="generator">Password Generator</button>
+      <button class="tab-button" data-tab="whitelist">Whitelist Manager</button>
     </div>
 
-    <!-- Password Tips Section -->
-    <div class="section">
-      <h2>Security Best Practices</h2>
-      <ul>
-        <li>Use at least 12 characters</li>
-        <li>Mix uppercase, lowercase, numbers, and symbols</li>
-        <li>Avoid common words or patterns</li>
-        <li>Use unique passwords for each account</li>
-        <li>Consider using a memorable passphrase</li>
-      </ul>
+    <!-- Password Generator Tab -->
+    <div class="tab-content active" id="generator-tab">
+      <div class="section">
+        <h2>Generate a Strong Password</h2>
+        <input type="text" id="generated-password" readonly placeholder="Your password will appear here">
+        <div id="password-strength"></div>
+        
+        <!-- Password Length Slider -->
+        <div class="slider-container">
+          <label for="password-length">Password Length: <span id="length-value">12</span></label>
+          <input type="range" id="password-length" min="8" max="32" value="12">
+        </div>
+        
+        <button id="generate-btn">Generate Secure Password</button>
+      </div>
+
+      <!-- Current Website Whitelist Section -->
+      <div class="section">
+        <h2>Current Website</h2>
+        <div class="whitelist-container">
+          <p>Current website: <span id="current-website">Not available</span></p>
+          <button id="whitelist-btn">Add to Whitelist</button>
+        </div>
+      </div>
+
+      <!-- Password Tips Section -->
+      <div class="section">
+        <h2>Security Best Practices</h2>
+        <ul>
+          <li>Use at least 12 characters</li>
+          <li>Mix uppercase, lowercase, numbers, and symbols</li>
+          <li>Avoid common words or patterns</li>
+          <li>Use unique passwords for each account</li>
+          <li>Consider using a memorable passphrase</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Whitelist Management Tab -->
+    <div class="tab-content" id="whitelist-tab">
+      <div class="section">
+        <h2>Manage Whitelisted Websites</h2>
+        <p class="info-text">Websites in this list are exempted from password checks.</p>
+        
+        <div class="whitelist-manager">
+          <div id="whitelist-items" class="whitelist-items">
+            <!-- Whitelist entries will be added here dynamically -->
+            <div class="empty-list-message">No websites in whitelist yet.</div>
+          </div>
+        </div>
+      </div>
     </div>
     
     <div class="footer">

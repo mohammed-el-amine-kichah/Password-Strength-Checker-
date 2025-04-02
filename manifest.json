@@ -1,24 +1,32 @@
 {
-    "manifest_version": 3,
-    "name": "Password Shield",
-    "version": "1.0",
-    "description": "A browser extension that checks password strength in real-time with a color-coded bar.",
-    "permissions": [
-      "activeTab"
-    ],
-    "host_permissions": [
+  "manifest_version": 3,
+  "name": "Password Shield",
+  "version": "1.0",
+  "description": "A browser extension that checks password strength in real-time with a color-coded bar.",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
     "<all_urls>"
   ],
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["scripts/zxcvbn.js", "scripts/content.js"]
-      }
-    ],
-   
-    "action": {
-        "default_popup": "popup/popup.html",
-        "default_icon": "images/icon.png",
-        "default_title": "Password Shield"
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "scripts/zxcvbn.js",
+        "scripts/content.js"
+      ]
     }
+  ],
+  "background": {
+    "service_worker": "scripts/storage.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": "images/icon.png",
+    "default_title": "Password Shield"
   }
+}
